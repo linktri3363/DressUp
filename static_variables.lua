@@ -57,6 +57,8 @@ defaults.profiles = {}
 LOCKSTYLE_WINDOW = 4
 -- Seconds to wait after a job change before applying the job's lockstyle set.
 LOCKSTYLE_JOB_CHANGE_DELAY = 2
+-- Seconds during which a repeat request for the same set is ignored.
+LOCKSTYLE_REPEAT_GUARD = 10
 defaults["others"] = {}
 defaults.replacements = { face = {}, race = {}, head = {}, body = {}, hands = {}, legs = {}, feet = {}, main = {}, sub = {}, ranged = {} }
 

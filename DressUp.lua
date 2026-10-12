@@ -52,7 +52,10 @@ info = T{
     party = S{},
     -- LINKTRI MODIFICATION: os.time() until which our own appearance updates
     -- are passed through unfrozen (see apply_lockstyle).
-    allow_self_until = 0
+    allow_self_until = 0,
+    -- LINKTRI MODIFICATION: last set sent and when, to drop duplicate requests
+    last_lockstyle = nil,
+    last_lockstyle_time = 0
 }
 
 -- LINKTRI MODIFICATION: apply a lockstyle set without blink prevention eating it.
@@ -77,6 +80,14 @@ function apply_lockstyle(set_number)
         error('Invalid lockstyle set: ' .. tostring(set_number))
         return
     end
+
+    -- Job change, PorterPacker and GearSwap can all ask for the same set within a
+    -- few seconds; the game rejects the repeat ("You must wait longer..."), so skip it.
+    if n == info.last_lockstyle and os.time() < info.last_lockstyle_time + LOCKSTYLE_REPEAT_GUARD then
+        return
+    end
+    info.last_lockstyle = n
+    info.last_lockstyle_time = os.time()
 
     info.allow_self_until = os.time() + LOCKSTYLE_WINDOW
     windower.send_command('input /lockstyleset ' .. n)
