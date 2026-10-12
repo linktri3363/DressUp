@@ -65,6 +65,13 @@ function apply_lockstyle(set_number)
     local player = windower.ffxi.get_player()
     if not player then return end
 
+    -- 'open': only let the next appearance change through; something else (e.g.
+    -- GearSwap's per-weapon user_job_lockstyle) sends the /lockstyleset itself.
+    if set_number == 'open' then
+        info.allow_self_until = os.time() + LOCKSTYLE_WINDOW
+        return
+    end
+
     local n = tonumber(set_number) or player.main_job_id
     if not n or n < 1 or n > 200 then
         error('Invalid lockstyle set: ' .. tostring(set_number))

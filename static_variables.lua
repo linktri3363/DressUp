@@ -41,6 +41,7 @@ helptext = [[DressUp - Command List:
 	- This uses outgoing packets.
 7. lockstyle/ls [set number] - Applies /lockstyleset and lets the new look through
 	blink prevention. Defaults to your main job's number (WAR=1 ... RUN=22).
+	"lockstyle open" only lets the next look through (for GearSwap's own lockstyles).
 8. autolockstyle/als - Toggles running "lockstyle" automatically on job change.
  ]]
 

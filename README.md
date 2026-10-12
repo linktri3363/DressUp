@@ -44,6 +44,7 @@ Original addon by Cairthenn; lockstyle support added by Linktri.
 	- Runs /lockstyleset and briefly lets your own appearance through blink prevention so the new look shows, then freezes it.
 	- With no number, uses your main job's ID (WAR=1 ... RUN=22), matching lockstyle sets numbered by job.
 	- PorterPacker calls this automatically after an unpack/repack finishes.
+	- `lockstyle open` only opens the pass-through window without sending a set; GearSwap uses it before its own per-weapon /lockstyleset.
 9. autolockstyle/als *(Linktri modification)*
 	- Toggles running lockstyle automatically on job change (on by default).
 	
