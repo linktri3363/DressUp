@@ -49,8 +49,32 @@ settings = config.load(defaults)
 info = T{
     names = T{},
     self = T{},
-    party = S{}
+    party = S{},
+    -- LINKTRI MODIFICATION: os.time() until which our own appearance updates
+    -- are passed through unfrozen (see apply_lockstyle).
+    allow_self_until = 0
 }
+
+-- LINKTRI MODIFICATION: apply a lockstyle set without blink prevention eating it.
+-- With self blinking set to "always", every appearance packet for our character is
+-- overwritten with the models already in memory - i.e. the OLD look - so a new
+-- /lockstyleset never shows. Open a short window where self packets pass through
+-- untouched, send the command, and let freezing resume on the new look afterwards.
+-- Lockstyle sets are numbered to match job IDs (WAR=1 ... RUN=22).
+function apply_lockstyle(set_number)
+    local player = windower.ffxi.get_player()
+    if not player then return end
+
+    local n = tonumber(set_number) or player.main_job_id
+    if not n or n < 1 or n > 200 then
+        error('Invalid lockstyle set: ' .. tostring(set_number))
+        return
+    end
+
+    info.allow_self_until = os.time() + LOCKSTYLE_WINDOW
+    windower.send_command('input /lockstyleset ' .. n)
+    notice(('Lockstyle set %03d applied (%s).'):format(n, player.main_job))
+end
 
 model_names = S{"Face","Race","Head","Body","Hands","Legs","Feet","Main","Sub","Ranged"}
 
@@ -93,6 +117,12 @@ windower.register_event('job change',function(job)
     elseif load_profile(res.jobs[job].name) then
         update_model(info.self.index)
         notice('Loaded profile: ' .. res.jobs[job].name)
+    end
+
+    -- LINKTRI MODIFICATION: switch to the new job's lockstyle set. If its gear is
+    -- still with the Porter Moogle, PorterPacker runs this again after unpacking.
+    if settings.autolockstyle then
+        windower.send_command(('wait %d; du lockstyle %d'):format(LOCKSTYLE_JOB_CHANGE_DELAY, job))
     end
 end)
 
@@ -193,8 +223,15 @@ windower.register_event('incoming chunk',function (id, _, data)
         name = "others"
     end
     
+    -- LINKTRI MODIFICATION: right after //du lockstyle, let our own appearance
+    -- updates through unfrozen so the new lockstyle actually shows.
+    local freeze = blink_logic(blink_type, char_index, player)
+    if blink_type == "self" and os.time() < info.allow_self_until then
+        freeze = false
+    end
+
     -- Model ID 0xFFFF in ranged slot signifies a monster. This prevents undesired results.
-    modified,packet = modify_gear(packet, name, blink_logic(blink_type, char_index, player), models)
+    modified,packet = modify_gear(packet, name, freeze, models)
     return packet['Ranged'] ~= 0xFFFF and modified and packets.build(packet)
 end)
 
@@ -220,7 +257,16 @@ windower.register_event('addon command', function (command,...)
     elseif command == "autoupdate" or command == "au" then
         settings.autoupdate = not settings.autoupdate
         notice("AutoUpdate setting is now "..tostring(settings.autoupdate)..".")
-        
+
+    -- LINKTRI MODIFICATION: lockstyle commands
+    elseif command == "lockstyle" or command == "ls" then
+        apply_lockstyle(args[1])
+        return
+
+    elseif command == "autolockstyle" or command == "als" then
+        settings.autolockstyle = not settings.autolockstyle
+        notice("AutoLockstyle on job change is now "..tostring(settings.autolockstyle)..".")
+
     elseif command == "save" or command == "s" then
         save_profile(args:concat(''))
     

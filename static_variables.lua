@@ -39,12 +39,23 @@ helptext = [[DressUp - Command List:
 	- Also accepts "bmn" and "blinkmenot" as command prefix.
 6. autoupdate - Updates your model as you send the commands to do so.
 	- This uses outgoing packets.
+7. lockstyle/ls [set number] - Applies /lockstyleset and lets the new look through
+	blink prevention. Defaults to your main job's number (WAR=1 ... RUN=22).
+8. autolockstyle/als - Toggles running "lockstyle" automatically on job change.
  ]]
 
 -- Initializes default settings table
 defaults = {}
 defaults.autoupdate = false
+-- LINKTRI MODIFICATION: run //du lockstyle automatically after a job change
+defaults.autolockstyle = true
 defaults.profiles = {}
+
+-- LINKTRI MODIFICATION: seconds that self blink prevention stays off after
+-- //du lockstyle, so the new lockstyle's appearance packets reach the client.
+LOCKSTYLE_WINDOW = 4
+-- Seconds to wait after a job change before applying the job's lockstyle set.
+LOCKSTYLE_JOB_CHANGE_DELAY = 2
 defaults["others"] = {}
 defaults.replacements = { face = {}, race = {}, head = {}, body = {}, hands = {}, legs = {}, feet = {}, main = {}, sub = {}, ranged = {} }
 
